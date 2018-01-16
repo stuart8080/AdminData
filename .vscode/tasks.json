@@ -1,0 +1,22 @@
+{
+    "version": "2.0.0",
+    "command": "dotnet.exe",
+    "tasks": [
+        {
+            "label": "build",
+            "args": ["D:/Code/AdminData/Source"]
+        },
+        {
+            "label": "watch-run",
+            "command": "dotnet.exe",
+            "options": {"cwd": "${workspaceFolder}/Source"},
+            "args": ["watch","run"],
+        }, 
+        {
+            "label": "watch-test",
+            "command": "dotnet.exe",
+            "options": {"cwd": "${workspaceFolder}/Tests"},
+            "args": ["watch","test"],
+        }, 
+    ]
+}
