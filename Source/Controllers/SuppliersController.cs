@@ -10,14 +10,8 @@ namespace AdminData.Controllers
     public class SuppliersController : Controller
     {
     [HttpGet("spreadsheet-detail")]
-    public IActionResult GetSpreadsheetDetail([FromQuery] string supplier, string status)
+    public IActionResult GetSpreadsheetDetail([FromQuery] string supplier = "", string status = "")
     {
-      if (string.IsNullOrEmpty(supplier)) {
-        return BadRequest("Supplier not specified.");
-      }
-      if (string.IsNullOrEmpty(status)) {
-        return BadRequest("Status not specified.");
-      }
       return Ok();
     }
         
