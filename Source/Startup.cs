@@ -7,35 +7,66 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using AdminData.DataAccess;
+// using AdminData.Services;
 
 namespace AdminData
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IHostingEnvironment env)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
+
+            this.config = builder.Build();
         }
 
-        public IConfiguration Configuration { get; }
+        public IConfigurationRoot config{ get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton(this.config);
+
+            services.AddDbContext<ContextExelOperations>(ServiceLifetime.Scoped);
+            services.AddDbContext<ContextInflow>(ServiceLifetime.Scoped);
+            services.AddDbContext<ContextWebsite>(ServiceLifetime.Scoped);
+
+            services.AddScoped<ISuppliersRepository,SuppliersRepository>();
+       
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+            });
+
+            // Add framework services.
             services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            // loggerFactory.AddConsole(this.config.GetSection("Logging"));
+            // loggerFactory.AddDebug();
+            
+            // https://stackoverflow.com/questions/40148660/how-to-get-a-console-output-in-asp-net-core-with-iis-express
+            // loggerFactory.MinimumLevel = LogLevel.Debug;
+            loggerFactory.AddDebug( LogLevel.Debug );
+            var logger = loggerFactory.CreateLogger("Startup");
+            logger.LogWarning("Logger configured!");
+           
 
-            if (env.IsDevelopment())
+            app.UseCors("AllowAll");
+
+            app.UseMvc(config => 
             {
-                app.UseDeveloperExceptionPage();
-            }
+                // config.MapRoute("MainApiRoute", "api/{controller}/{action}");
+            });
 
-            app.UseMvc();
         }
     }
 }
